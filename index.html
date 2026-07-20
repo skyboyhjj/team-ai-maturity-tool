@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="description" content="一个开源的团队AI成熟度自评工具，基于四轴诊断模型，15道题快速评估团队AI采用阶段。">
+<title>团队AI成熟度自评工具</title>
+<style>
+/* ===== 主题变量定义 ===== */
+:root,[data-theme="dark"]{
+  --bg:#0f1117;--bg-section:rgba(255,255,255,0.03);--bg-modal:rgba(22,28,48,0.98);--border-section:rgba(255,255,255,0.06);
+  --text:#e0e0e0;--text-dim:rgba(255,255,255,0.75);--text-muted:rgba(255,255,255,0.4);--text-faint:rgba(255,255,255,0.25);
+  --bg-header:rgba(15,17,23,0.92);--border-header:rgba(255,255,255,0.06);
+  --bg-option:rgba(255,255,255,0.03);--border-option:rgba(255,255,255,0.12);--text-option:rgba(255,255,255,0.55);
+  --bg-option-hover:rgba(255,255,255,0.08);--text-option-hover:#fff;
+  --border-question:rgba(255,255,255,0.04);--text-heading:rgba(255,255,255,0.8);
+  --bg-result:rgba(15,17,23,0.96);--border-result:rgba(255,255,255,0.06);
+  --text-close:rgba(255,255,255,0.3);--text-close-hover:#fff;
+  --text-stat-label:rgba(255,255,255,0.4);--text-stat-value:#fff;
+  --bg-history:rgba(255,255,255,0.03);--text-history:rgba(255,255,255,0.5);
+  --accent-1:#4ECDC4;--accent-2:#A29BFE;--accent-warn:#FDCB6E;--accent-danger:#FF6B6B;
+  --bg-advice:rgba(78,205,196,0.06);--border-advice:#4ECDC4;--text-advice:rgba(255,255,255,0.6);
+  --bg-btn:rgba(255,255,255,0.05);--border-btn:rgba(255,255,255,0.15);--text-btn:#fff;
+  --bg-btn-hover:rgba(255,255,255,0.1);--border-danger:rgba(255,107,107,0.3);--bg-danger-hover:rgba(255,107,107,0.1);
+  --hr-color:rgba(255,255,255,0.05);--text-report-h4:rgba(255,255,255,0.5);--text-report-faint:rgba(255,255,255,0.3);
+  --text-report-dim:rgba(255,255,255,0.35);--text-report-verydim:rgba(255,255,255,0.22);
+  --text-link:rgba(255,255,255,0.4);--text-link-hover:#fff;
+  --text-subtitle:rgba(255,255,255,0.4);--text-faint2:rgba(255,255,255,0.25);
+  --text-advice-detail:rgba(255,255,255,0.55);
+  --radar-grid:rgba(255,255,255,0.04);--radar-grid-main:rgba(255,255,255,0.1);--radar-axis:rgba(255,255,255,0.06);
+  --radar-fill:rgba(78,205,196,0.1);--radar-label:rgba(255,255,255,0.5);
+  --stage-0-bg:rgba(255,107,107,0.15);--stage-1-bg:rgba(253,203,110,0.15);--stage-2-bg:rgba(78,205,196,0.15);
+  --stage-3-bg:rgba(116,185,255,0.15);--stage-4-bg:rgba(162,155,254,0.15);
+  --selected-bg:rgba(78,205,196,0.12);--score5-bg:rgba(162,155,254,0.1);
+  --history-flat:rgba(255,255,255,0.3);
+  --text-stage-0:#FF6B6B;--text-stage-1:#FDCB6E;--text-stage-2:#4ECDC4;--text-stage-3:#74B9FF;--text-stage-4:#A29BFE;
+  --na-count:rgba(255,255,255,0.25);
+}
+[data-theme="light"]{
+  --bg:#f5f6fa;--bg-section:#fff;--border-section:rgba(0,0,0,0.08);
+  --text:#2d3436;--text-dim:rgba(0,0,0,0.75);--text-muted:rgba(0,0,0,0.5);--text-faint:rgba(0,0,0,0.35);
+  --bg-header:rgba(245,246,250,0.92);--border-header:rgba(0,0,0,0.08);
+  --bg-option:rgba(0,0,0,0.03);--border-option:rgba(0,0,0,0.15);--text-option:rgba(0,0,0,0.55);
+  --bg-option-hover:rgba(0,0,0,0.06);--text-option-hover:#2d3436;
+  --border-question:rgba(0,0,0,0.06);--text-heading:rgba(0,0,0,0.8);
+  --bg-result:rgba(245,246,250,0.96);--border-result:rgba(0,0,0,0.08);
+  --text-close:rgba(0,0,0,0.3);--text-close-hover:#2d3436;
+  --text-stat-label:rgba(0,0,0,0.5);--text-stat-value:#2d3436;
+  --bg-history:rgba(0,0,0,0.03);--text-history:rgba(0,0,0,0.5);
+  --accent-1:#00b894;--accent-2:#6c5ce7;--accent-warn:#e17055;--accent-danger:#d63031;
+  --bg-advice:rgba(0,184,148,0.08);--border-advice:#00b894;--text-advice:rgba(0,0,0,0.65);
+  --bg-btn:rgba(0,0,0,0.04);--border-btn:rgba(0,0,0,0.15);--text-btn:#2d3436;
+  --bg-btn-hover:rgba(0,0,0,0.08);--border-danger:rgba(214,48,49,0.3);--bg-danger-hover:rgba(214,48,49,0.08);
+  --hr-color:rgba(0,0,0,0.06);--text-report-h4:rgba(0,0,0,0.5);--text-report-faint:rgba(0,0,0,0.35);
+  --text-report-dim:rgba(0,0,0,0.4);--text-report-verydim:rgba(0,0,0,0.25);
+  --text-link:rgba(0,0,0,0.5);--text-link-hover:#2d3436;
+  --text-subtitle:rgba(0,0,0,0.5);--text-faint2:rgba(0,0,0,0.35);
+  --text-advice-detail:rgba(0,0,0,0.6);
+  --radar-grid:rgba(0,0,0,0.04);--radar-grid-main:rgba(0,0,0,0.1);--radar-axis:rgba(0,0,0,0.06);
+  --radar-fill:rgba(0,184,148,0.1);--radar-label:rgba(0,0,0,0.5);
+  --stage-0-bg:rgba(214,48,49,0.12);--stage-1-bg:rgba(225,112,85,0.12);--stage-2-bg:rgba(0,184,148,0.12);
+  --stage-3-bg:rgba(9,132,227,0.12);--stage-4-bg:rgba(108,92,231,0.12);
+  --selected-bg:rgba(0,184,148,0.12);--score5-bg:rgba(108,92,231,0.1);
+  --history-flat:rgba(0,0,0,0.3);
+  --text-stage-0:#d63031;--text-stage-1:#e17055;--text-stage-2:#00b894;--text-stage-3:#0984e3;--text-stage-4:#6c5ce7;
+  --na-count:rgba(0,0,0,0.25);
+}
+[data-theme="high-contrast"]{
+  --bg:#000;--bg-section:#111;--bg-modal:#111;--border-section:#333;
+  --text:#fff;--text-dim:#fff;--text-muted:#ccc;--text-faint:#999;
+  --bg-header:#000;--border-header:#333;
+  --bg-option:#111;--border-option:#555;--text-option:#ccc;
+  --bg-option-hover:#333;--text-option-hover:#fff;
+  --border-question:#222;--text-heading:#fff;
+  --bg-result:#000;--border-result:#333;
+  --text-close:#999;--text-close-hover:#fff;
+  --text-stat-label:#ccc;--text-stat-value:#fff;
+  --bg-history:#111;--text-history:#ccc;
+  --accent-1:#ff0;--accent-2:#0ff;--accent-warn:#f80;--accent-danger:#f44;
+  --bg-advice:#111;--border-advice:#ff0;--text-advice:#fff;
+  --bg-btn:#111;--border-btn:#555;--text-btn:#fff;
+  --bg-btn-hover:#333;--border-danger:rgba(255,68,68,0.5);--bg-danger-hover:rgba(255,68,68,0.15);
+  --hr-color:#222;--text-report-h4:#ccc;--text-report-faint:#999;
+  --text-report-dim:#ccc;--text-report-verydim:#999;
+  --text-link:#999;--text-link-hover:#fff;
+  --text-subtitle:#ccc;--text-faint2:#999;
+  --text-advice-detail:#fff;
+  --radar-grid:#222;--radar-grid-main:#444;--radar-axis:#222;
+  --radar-fill:rgba(255,255,0,0.1);--radar-label:#ccc;
+  --stage-0-bg:#400;--stage-1-bg:#430;--stage-2-bg:#040;--stage-3-bg:#004;--stage-4-bg:#404;
+  --selected-bg:rgba(255,255,0,0.15);--score5-bg:rgba(0,255,255,0.1);
+  --history-flat:#999;
+  --text-stage-0:#f44;--text-stage-1:#f80;--text-stage-2:#ff0;--text-stage-3:#0af;--text-stage-4:#0ff;
+  --na-count:#999;
+}
+
+/* ===== 基础样式 ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background 0.3s,color 0.3s}
+.container{max-width:960px;margin:0 auto;padding:24px 20px 120px}
+h1{font-size:22px;text-align:center;margin:28px 0 6px;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.subtitle{text-align:center;font-size:13px;color:var(--text-subtitle);margin-bottom:32px}
+.section{margin-bottom:28px;background:var(--bg-section);border:1px solid var(--border-section);border-radius:12px;padding:20px 24px;transition:background 0.3s,border-color 0.3s}
+.section h2{font-size:15px;margin-bottom:16px;color:var(--text-heading);display:flex;align-items:center;gap:8px}
+.question{margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--border-question)}
+.question:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.q-title{font-size:13px;margin-bottom:8px;color:var(--text-dim);line-height:1.5}
+.q-desc{font-size:11px;color:var(--text-muted);margin-bottom:10px}
+.options{display:flex;flex-wrap:wrap;gap:8px}
+.opt-btn{padding:8px 16px;border:1px solid var(--border-option);border-radius:8px;background:var(--bg-option);color:var(--text-option);cursor:pointer;font-size:12px;transition:all 0.2s}
+.opt-btn:hover{background:var(--bg-option-hover);color:var(--text-option-hover)}
+.opt-btn.selected{border-color:var(--accent-1);background:var(--selected-bg);color:var(--accent-1);font-weight:600}
+.opt-btn.score5{border-color:var(--accent-2);background:var(--score5-bg);color:var(--accent-2)}
+
+/* 结果面板 */
+.result-panel{position:fixed;top:0;right:-420px;width:400px;height:100vh;background:var(--bg-result);backdrop-filter:blur(16px);border-left:1px solid var(--border-result);z-index:100;transition:right 0.4s cubic-bezier(.22,1,.36,1);overflow-y:auto;padding:32px 24px}
+.result-panel.open{right:0}
+.result-panel h3{font-size:16px;margin-bottom:18px;color:var(--text-stat-value)}
+.result-panel .close-btn{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text-close);font-size:22px;cursor:pointer}
+.result-panel .close-btn:hover{color:var(--text-close-hover)}
+
+/* 阶段徽章 */
+.stage-badge{display:inline-block;padding:6px 16px;border-radius:20px;font-size:14px;font-weight:700;margin:8px 0 16px}
+.stage-0{background:var(--stage-0-bg);color:var(--text-stage-0)}
+.stage-1{background:var(--stage-1-bg);color:var(--text-stage-1)}
+.stage-2{background:var(--stage-2-bg);color:var(--text-stage-2)}
+.stage-3{background:var(--stage-3-bg);color:var(--text-stage-3)}
+.stage-4{background:var(--stage-4-bg);color:var(--text-stage-4)}
+
+.stat-item{margin:12px 0;display:flex;justify-content:space-between;align-items:center}
+.stat-label{font-size:12px;color:var(--text-stat-label)}
+.stat-value{font-size:14px;font-weight:600;color:var(--text-stat-value)}
+.stat-value.good{color:var(--accent-1)}
+.stat-value.warn{color:var(--accent-warn)}
+.stat-value.bad{color:var(--accent-danger)}
+
+canvas.radar{display:block;margin:16px auto;width:100%;max-width:320px}
+
+.history-item{margin:8px 0;padding:10px 14px;background:var(--bg-history);border-radius:8px;font-size:12px;color:var(--text-history);display:flex;justify-content:space-between;align-items:center}
+.history-item .trend-up{color:var(--accent-1)}
+.history-item .trend-down{color:var(--accent-danger)}
+.history-item .trend-flat{color:var(--history-flat)}
+
+.advice-box{margin:16px 0;padding:14px 16px;background:var(--bg-advice);border-left:3px solid var(--border-advice);border-radius:8px;font-size:12px;color:var(--text-advice);line-height:1.7}
+
+.actions{display:flex;justify-content:center;gap:12px;margin-top:32px;padding-bottom:32px}
+.btn{padding:10px 24px;border:1px solid var(--border-btn);border-radius:10px;background:var(--bg-btn);color:var(--text-btn);font-size:14px;cursor:pointer;transition:all 0.2s}
+.btn:hover{background:var(--bg-btn-hover)}
+.btn.primary{background:linear-gradient(135deg,var(--accent-1),var(--accent-2));border:none;font-weight:600}
+.btn.primary:hover{opacity:0.9}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.btn.danger{color:var(--accent-danger);border-color:var(--border-danger)}
+.btn.danger:hover{background:var(--bg-danger-hover)}
+
+/* 主题切换器 */
+.theme-switcher{display:flex;gap:4px;background:var(--bg-section);border-radius:20px;padding:3px;border:1px solid var(--border-section)}
+.theme-btn{width:30px;height:30px;border-radius:50%;border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;background:transparent;transition:all 0.2s;line-height:1}
+.theme-btn:hover{background:var(--bg-option-hover)}
+.theme-btn.active{background:var(--accent-1);box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.theme-btn .tooltip{display:none}
+
+@media(max-width:768px){
+  .result-panel{width:100%;right:-100%}
+  .container{padding:16px 12px 80px}
+  .opt-btn{flex:1 1 calc(50% - 4px);text-align:center}
+  /* 返回顶部 */
+.back-to-top{position:fixed;bottom:30px;right:30px;width:50px;height:50px;background:linear-gradient(135deg,#0066cc,#00cc99);color:#fff;border:none;border-radius:50%;cursor:pointer;opacity:0;visibility:hidden;transition:all 0.3s;z-index:1100;font-size:18px;display:flex;align-items:center;justify-content:center}
+.back-to-top.show{opacity:1;visibility:visible}
+.back-to-top:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,102,204,0.4)}
+
+/* 返回首页 */
+.back-to-home{position:fixed;bottom:30px;right:90px;width:50px;height:50px;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;border:none;border-radius:50%;cursor:pointer;opacity:0;visibility:hidden;transition:all 0.3s;z-index:1100;font-size:16px;display:flex;align-items:center;justify-content:center}
+.back-to-home.show{opacity:1;visibility:visible}
+.back-to-home:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(102,126,234,0.4)}
+
+/* 反馈浮动按钮 */
+.feedback-float{position:fixed;bottom:90px;right:30px;background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;border:none;border-radius:24px;cursor:pointer;opacity:0;visibility:hidden;transition:all 0.3s;z-index:1100;font-size:15px;padding:12px 18px;box-shadow:0 4px 15px rgba(243,156,18,0.4);display:flex;align-items:center;gap:6px}
+.feedback-float.show{opacity:1;visibility:visible}
+.feedback-float:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(243,156,18,0.5)}
+
+/* 反馈弹窗覆盖（主题适配） */
+.feedback-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:3000;align-items:center;justify-content:center}
+.feedback-overlay.active{display:flex}
+.feedback-modal{background:var(--bg-modal);border:1px solid var(--border-option);border-radius:16px;padding:32px;max-width:440px;width:90%;box-shadow:0 12px 40px rgba(0,0,0,0.5),0 0 80px rgba(0,0,0,0.15);position:relative;max-height:90vh;overflow-y:auto;z-index:3001;color:var(--text);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.feedback-modal-close{position:absolute;top:14px;right:18px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-muted);line-height:1}
+.feedback-modal-close:hover{color:var(--text)}
+.feedback-modal h3{font-size:1.2em;margin:0 0 6px;color:var(--text)}
+.feedback-modal-sub{font-size:0.85em;color:var(--text-muted);margin:0 0 20px}
+
+.feedback-form-group{margin-bottom:16px}
+.feedback-form-group label{display:block;font-size:0.9em;font-weight:600;color:var(--text-dim);margin-bottom:6px}
+.feedback-form-group select,.feedback-form-group textarea,.feedback-form-group input{width:100%;padding:10px 14px;border:1px solid var(--border-option);border-radius:8px;font-size:0.95em;font-family:inherit;outline:none;transition:border-color 0.2s;box-sizing:border-box;background:var(--bg-btn);color:var(--text)}
+.feedback-form-group select:focus,.feedback-form-group textarea:focus,.feedback-form-group input:focus{border-color:#f39c12}
+.feedback-form-group textarea{min-height:120px;resize:vertical}
+.feedback-form-group textarea.error{border-color:#e74c3c}
+.feedback-form-group .feedback-error{display:none;color:#e74c3c;font-size:0.8em;margin-top:4px}
+.feedback-form-group .feedback-error.show{display:block}
+.feedback-form-group .feedback-count{color:var(--text-muted);font-size:0.8em;margin-top:4px;text-align:right}
+.feedback-form-group .feedback-count.error{color:#e74c3c}
+.feedback-form-group .feedback-count.success{color:#27ae60}
+.feedback-submit{width:100%;padding:12px;background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;border:none;border-radius:24px;font-size:1em;font-weight:600;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s}
+.feedback-submit:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(243,156,18,0.4)}
+.feedback-submit:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.feedback-success{display:none;text-align:center;padding:20px 0}
+.feedback-success.show{display:block}
+.feedback-success-icon{font-size:3em;margin-bottom:12px}
+.feedback-success p{color:var(--text-dim);margin:4px 0}
+.file-upload-area{border:2px dashed var(--border-option);border-radius:8px;padding:24px 16px;text-align:center;cursor:pointer;transition:all 0.2s}
+.file-upload-area:hover,.file-upload-area.dragover{border-color:#f39c12;background:rgba(243,156,18,0.05)}
+.file-upload-area span{color:var(--text-muted);font-size:0.9em}
+.file-preview-container{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.file-preview-item{position:relative;width:100px;height:100px;border-radius:8px;overflow:hidden}
+.file-preview-item img{width:100%;height:100%;object-fit:cover}
+.file-preview-remove{position:absolute;top:4px;right:4px;width:20px;height:20px;background:rgba(0,0,0,0.6);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px}
+@media print{.feedback-float,.feedback-overlay{display:none!important}}
+
+@media(max-width:768px){
+  .back-to-top{right:15px;width:45px;height:45px;font-size:14px}
+  .back-to-home{right:65px;width:45px;height:45px;font-size:14px}
+  .feedback-float{right:15px;bottom:85px;padding:10px 14px;font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<header style="position:fixed;top:0;left:0;right:0;z-index:100;background:var(--bg-header);backdrop-filter:blur(10px);padding:8px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-header);">
+<div style="font-size:14px;font-weight:bold;background:linear-gradient(135deg,var(--accent-1),var(--accent-2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">✨ 慧惠 · 数字生命</div>
+<div style="display:flex;gap:12px;align-items:center;">
+<div class="theme-switcher" id="themeSwitcher">
+  <button class="theme-btn" data-theme="light" title="浅色模式" aria-label="浅色模式">☀️</button>
+  <button class="theme-btn active" data-theme="dark" title="深色模式" aria-label="深色模式">🌙</button>
+  <button class="theme-btn" data-theme="high-contrast" title="高对比度模式" aria-label="高对比度模式">⚡</button>
+</div>
+<span style="color:var(--text-link);font-size:12px;">开源 · GitHub</span>
+</div>
+</header>
+
+<div class="container" style="padding-top:44px">
+  <h1>🧠 慧惠 · 团队 AI 成熟度自评工具</h1>
+  <div class="subtitle">道境坐标系 DRF · 四轴诊断 · 乘法公式 · 慧惠陪伴式评估</div>
+  <div style="text-align:center;margin-bottom:28px;font-size:11px;color:var(--text-faint2);line-height:1.6">
+    评估框架基于慧惠产品宪法中的道境坐标系（时位·宇位·识位·缘位），由人类导师设计、AI辅助生成。<br>这不是考试，没有标准答案——它是一面镜子，帮你看见团队此刻的位置。
+  </div>
+
+  <div class="section">
+    <h2>📡 第一部分：基础设施与工具准入（阶段 0→1）</h2>
+    <div class="q" data-q="1" data-type="choice" data-axis="yuwei">
+      <div class="q-title">1. 公司是否已为员工统一开通了合规的 AI 工具账号？</div>
+      <div class="options" data-max="4"></div>
+    </div>
+    <div class="q" data-q="2" data-type="choice" data-axis="yuwei">
+      <div class="q-title">2. 在使用 AI 工具时，是否存在以下阻碍？（按最严重一档计分）</div>
+      <div class="options" data-max="4"></div>
+    </div>
+    <div class="q" data-q="3" data-type="score" data-axis="yuwei">
+      <div class="q-title">3. 自评：现有 IT/安全流程对 AI 工具的支持力度（1-5分）</div>
+      <div class="options" data-max="5"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>⚡ 第二部分：日常工作流融合度（阶段 1→2）</h2>
+    <div class="q" data-q="4" data-type="choice" data-axis="shiwei">
+      <div class="q-title">4. 团队成员目前的 AI 使用模式主要是？</div>
+      <div class="options" data-max="4"></div>
+    </div>
+    <div class="q" data-q="5" data-type="choice" data-axis="shiwei">
+      <div class="q-title">5. 代码/内容产出中，AI 参与的比例大约是？</div>
+      <div class="options" data-max="4"></div>
+    </div>
+    <div class="q" data-q="6" data-type="choice" data-axis="shiwei_trust">
+      <div class="q-title">6. ⭐ 团队成员对 AI 产出的初始信任度如何？</div>
+      <div class="options" data-max="4"></div>
+    </div>
+    <div class="q" data-q="7" data-type="score" data-axis="yuanwei">
+      <div class="q-title">7. 自评：是否已建立"AI 写、工具验、人抽查"的可信验证闭环？（1-5分）</div>
+      <div class="options" data-max="5"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🔄 第三部分：智能体与系统化应用（阶段 2→3）</h2>
+    <div class="q" data-q="8" data-type="choice" data-axis="shiwei">
+      <div class="q-title">8. 是否将重复性工作抽象成了批量执行的 Loop 任务流？</div>
+      <div class="options" data-max="4"></div>
+    </div>
+    <div class="q" data-q="9" data-type="choice" data-axis="yuwei">
+      <div class="q-title">9. 团队协调的 AI 智能体/自动化任务规模大概是？</div>
+      <div class="options" data-max="4"></div>
+    </div>
+    <div class="q" data-q="10" data-type="choice" data-axis="yuanwei">
+      <div class="q-title">10. ⭐ AI 的自我验证结果通常是什么样的？</div>
+      <div class="options" data-max="4"></div>
+    </div>
+    <div class="q" data-q="11" data-type="score" data-axis="shiwei_role">
+      <div class="q-title">11. 自评：是否觉得自己在做"管理智能体的指挥官"？（1-5分）</div>
+      <div class="options" data-max="5"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🌐 第四部分：跨部门与知识治理（阶段 3→4）</h2>
+    <div class="q" data-q="12" data-type="choice" data-axis="yuanwei">
+      <div class="q-title">12. AI 是否能获取足够上下文（代码库/Wiki/历史工单）？</div>
+      <div class="options" data-max="4"></div>
+    </div>
+    <div class="q" data-q="13" data-type="choice" data-axis="yuwei">
+      <div class="q-title">13. 非技术部门是否也能低门槛使用内部 AI 能力？</div>
+      <div class="options" data-max="4"></div>
+    </div>
+    <div class="q" data-q="14" data-type="score" data-axis="yuanwei">
+      <div class="q-title">14. 自评：AI 产出质量与人工产出是否一视同仁？（1-5分）</div>
+      <div class="options" data-max="5"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>🔍 第五部分：觉知清晰度</h2>
+    <div class="q" data-q="15" data-type="choice" data-axis="zhiwei">
+      <div class="q-title">15. ⭐ 团队成员是否清楚自己在 AI 协作中处于什么阶段、下一步该做什么？</div>
+      <div class="options" data-max="4"></div>
+    </div>
+  </div>
+</div>
+
+<div class="actions">
+  <button class="btn" onclick="toggleHistory()">📊 历史记录</button>
+  <button class="btn danger" onclick="resetAll()">🔄 重置</button>
+  <button class="btn primary" onclick="calculate()">📊 生成诊断报告</button>
+</div>
+
+<!-- 结果侧边面板 -->
+<div class="result-panel" id="result">
+  <button class="close-btn" onclick="document.getElementById('result').classList.remove('open')">✕</button>
+  <h3>📊 诊断报告</h3>
+  <div id="report-content"></div>
+</div>
+
+<!-- 返回顶部 -->
+<button class="back-to-top" id="backToTopBtn" title="返回顶部" aria-label="返回顶部">↑</button>
+
+<!-- 返回首页 -->
+<button class="back-to-home" id="backToHomeBtn" onclick="(function(){var host=window.location.hostname;if(host.endsWith('.github.io')){var parts=host.split('.');var username=parts[0];var path=window.location.pathname;var repo=path.split('/')[1]||'team-ai-maturity-tool';window.location.href='https://github.com/'+username+'/'+repo;}else{window.location.href='https://github.com';}})()" title="GitHub 仓库" aria-label="GitHub 仓库">🏠</button>
+
+<!-- 反馈建议浮动按钮 -->
+<button class="feedback-float" id="feedbackFloat" title="反馈建议" data-source="maturity_tool">📝 反馈建议</button>
+
+<!-- 反馈弹窗 -->
+<div class="feedback-overlay" id="feedbackOverlay">
+  <div class="feedback-modal">
+    <button class="feedback-modal-close" id="feedbackClose">&times;</button>
+    <h3>📬 反馈与建议</h3>
+    <p class="feedback-modal-sub">这份工具因你的反馈而不断进化</p>
+    <div id="feedbackForm">
+      <div class="feedback-form-group">
+        <label for="fbType">反馈类型</label>
+        <select id="fbType">
+          <option value="suggestion">建议</option>
+          <option value="correction">纠错</option>
+          <option value="question">疑问</option>
+          <option value="appreciation">赞赏</option>
+        </select>
+      </div>
+      <div class="feedback-form-group">
+        <label for="fbContent">具体内容 <span style="color:#e74c3c">*</span></label>
+        <textarea id="fbContent" placeholder="请描述你的反馈内容…" required></textarea>
+        <div class="feedback-count" id="fbCount">0 / 2000 字（至少5个汉字）</div>
+        <div class="feedback-error" id="fbError">✗ 反馈内容至少需要5个汉字</div>
+      </div>
+      <div class="feedback-form-group">
+        <label for="fbContact">联系方式（选填）</label>
+        <input type="text" id="fbContact" placeholder="邮箱或微信，便于后续沟通">
+      </div>
+      <div class="feedback-form-group">
+        <label for="fbFile">图片附件（选填，最多3张）</label>
+        <div class="file-upload-area" id="fileUploadArea">
+          <span>📎 点击或拖拽上传图片</span>
+          <input type="file" id="fbFile" multiple accept="image/*" style="display:none">
+        </div>
+        <div class="file-preview-container" id="filePreviewContainer"></div>
+      </div>
+      <button class="feedback-submit" id="fbSubmit">提交反馈</button>
+    </div>
+    <div class="feedback-success" id="feedbackSuccess">
+      <div class="feedback-success-icon">🎉</div>
+      <p><strong>感谢你的反馈！</strong></p>
+      <p>我们会在第一时间处理</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== 主题切换 ==========
+(function(){
+  const saved = localStorage.getItem('ai_maturity_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const btns = document.querySelectorAll('.theme-btn');
+    btns.forEach(b=>{
+      if(b.dataset.theme === saved) b.classList.add('active');
+      else b.classList.remove('active');
+      b.addEventListener('click', ()=>{
+        const theme = b.dataset.theme;
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('ai_maturity_theme', theme);
+        btns.forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+        // 重绘雷达图（如果已渲染）
+        const radar = document.getElementById('radar');
+        if(radar && radar.getContext){
+          const scaled = radar._scaled;
+          if(scaled) setTimeout(()=>drawRadar(scaled), 50);
+        }
+      });
+    });
+  });
+})();
+
+// ========== 返回顶部按钮 ==========
+(function(){
+  const btn = document.getElementById('backToTopBtn');
+  const backHomeBtn = document.getElementById('backToHomeBtn');
+  const feedbackFloat = document.getElementById('feedbackFloat');
+  let ticking = false;
+  window.addEventListener('scroll', ()=>{
+    if(!ticking){
+      requestAnimationFrame(()=>{
+        const show = window.scrollY > 300;
+        if(btn) btn.classList.toggle('show', show);
+        if(backHomeBtn) backHomeBtn.classList.toggle('show', show);
+        if(feedbackFloat) feedbackFloat.classList.toggle('show', show);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, {passive:true});
+})();
+
+// 返回顶部点击事件
+document.getElementById('backToTopBtn')?.addEventListener('click', function() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+// ========== 题库数据 ==========
+const QUESTIONS = {
+  1:{text:'未开通，需个人申请或禁止使用',score:1},
+  2:{text:'仅限特定团队/项目试点',score:2},
+  3:{text:'已全面放开基础功能',score:3},
+  4:{text:'已全面放开+私有化部署',score:4},
+  5:{text:'（5分）流程僵化——完善且高效',score:5}
+};
+const OPTIONS = {
+  q1:['未开通，需个人申请或禁止使用','仅限特定团队/项目试点','已全面放开基础功能','已全面放开+私有化部署','不确定/不适用（N/A）'],
+  q2:['需层层审批/数据安全顾虑严重','缺乏安全合规指引','网络延迟或轻度卡顿','无明显阻碍','不确定/不适用（N/A）'],
+  q3:['1（流程僵化阻碍创新）','2（有基本支持但体验差）','3（大部分可用偶有摩擦）','4（完善框架且高效）','5（安全已内置自动化）','不确定/不适用（N/A）'],
+  q4:['偶尔查资料写片段','AI辅助，人工逐字审查','同时给多个AI派发任务','AI自主，人定方向看产出','不确定/不适用（N/A）'],
+  q5:['<10%（仅尝鲜）','10%~30%（辅助起草）','30%~70%（人机协作）','>70%（AI初稿人精修）','不确定/不适用（N/A）'],
+  q6:['每次都不放心，必须逐行检查','简单任务可信任','多数信任，高风险抽查','已建立"先信后验"心智','不确定/不适用（N/A）'],
+  q7:['1（全靠人眼审查）','2（零散工具辅助）','3（关键环节自动化）','4（端到端验证流水线）','5（验证结果反馈AI学习）','不确定/不适用（N/A）'],
+  q8:['没有，临时提问','有Prompt模板沉淀','有脚本串联AI批量处理','有常驻智能体主动触发','不确定/不适用（N/A）'],
+  q9:['0个（无系统化智能体）','1~2个实验性','5~10个并行专项','数十至上百个融入流程','不确定/不适用（N/A）'],
+  q10:['经常出错，信任度下降','偶有错误但趋势改善','验证通过率高','可信且能从错误中学习','不确定/不适用（N/A）'],
+  q11:['1（纯执行者）','2（有些委派但自己做主力）','3（相当比例"派活儿+验收"）','4（普遍是管理者）','5（形成"意图→复盘"节奏）','不确定/不适用（N/A）'],
+  q12:['不能，胡编乱造','仅能看局部文件','已连通主要知识库','拥有全局业务视角','不确定/不适用（N/A）'],
+  q13:['仅技术部门在用','个别偷用公网工具','有统一内部AI入口','各业务线都有专属智能体','不确定/不适用（N/A）'],
+  q14:['1（没管过）','2（有口头要求）','3（有团队级CLAUDE.md）','4（规范深度集成AI自动遵循）','5（规范由AI参与维护优化）','不确定/不适用（N/A）'],
+  q15:['不太清楚凭感觉用','个人模糊团队无共识','团队有大致方向','有明确阶段自评+季度复盘','不确定/不适用（N/A）']
+};
+
+// ========== 轴映射 ==========
+const AXIS_MAP = {
+  yuwei:[1,2,3,9,13],    // 宇位：资源分布
+  shiwei:[4,5,8],        // 时位：节律
+  zhiwei:[6,11,15],      // 识位：信任+角色+觉知
+  yuanwei:[7,10,12,14]   // 缘位：验证+反馈+上下文+规范
+};
+const AXIS_LABELS = {yuwei:'宇位Ψᵧ（资源）',shiwei:'时位Ψₓ（节律）',zhiwei:'识位Z（觉知）',yuanwei:'缘位Ψₗ（反馈）'};
+const AXIS_MAX = {yuwei:21, shiwei:12, zhiwei:13, yuanwei:18}; // 逐题满分求和
+
+// ========== 每题满分（根据选项数确定） ==========
+const QUESTION_MAX = {1:4,2:4,3:5,4:4,5:4,6:4,7:5,8:4,9:4,10:4,11:5,12:4,13:4,14:5,15:4};
+
+// ========== 渲染选项按钮 ==========
+function renderOptions(){
+  document.querySelectorAll('.q').forEach(q=>{
+    const qNum = parseInt(q.dataset.q);
+    const isScore = q.dataset.type === 'score';
+    const opts = OPTIONS['q'+qNum];
+    const max = parseInt(q.dataset.max);
+    const container = q.querySelector('.options');
+    container.innerHTML = '';
+    opts.forEach((text,i)=>{
+      const btn = document.createElement('div');
+      btn.className = 'opt-btn';
+      if(isScore && max===5) btn.className += ' score5';
+      // N/A 选项特殊样式
+      if(text.includes('N/A')||text.includes('不适用')){
+        btn.className += ' score5';
+        btn.style.opacity = '0.6';
+        btn.style.fontStyle = 'italic';
+      }
+      btn.textContent = text;
+      btn.dataset.value = i+1;
+      btn.onclick = ()=>{
+        container.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected'));
+        btn.classList.add('selected');
+        // N/A 选项存储为 0，不计入评分
+        const isNA = text.includes('N/A')||text.includes('不适用');
+        q.dataset.answer = isNA ? 0 : i+1;
+        autoCalc();
+      };
+      container.appendChild(btn);
+    });
+  });
+}
+
+// ========== 获取答案 ==========
+function getAnswers(){
+  const answers = {};
+  document.querySelectorAll('.q').forEach(q=>{
+    const val = q.dataset.answer;
+    if(val !== undefined && val !== '') answers[parseInt(q.dataset.q)] = parseInt(val);
+  });
+  return answers;
+}
+
+// ========== 自动实时计算（静默，不弹窗） ==========
+function autoCalc(){
+  const answers = getAnswers();
+  if(Object.keys(answers).length < 15) return;
+  // 全部答完 → 按钮脉冲提示，引导点击生成报告
+  const actionBtn = document.querySelector('.btn.primary');
+  if(actionBtn){
+    actionBtn.style.animation = 'none';
+    actionBtn.offsetHeight; // 强制回流，重置动画
+    actionBtn.style.animation = 'pulse 1.5s ease-in-out 3';
+    actionBtn.textContent = '📊 全部完成，点击生成报告';
+  }
+}
+
+// ========== 完整计算 ==========
+function calculate(){
+  const answers = getAnswers();
+  const allClicked = Object.keys(answers).length;
+  if(allClicked < 15){
+    alert('请先完成全部 15 道题（可选择"N/A"表示不确定）');
+    return;
+  }
+  
+  // 有效答案（排除N/A=0）
+  const validAnswers = {};
+  let naCount = 0;
+  for(const [q,val] of Object.entries(answers)){
+    if(val > 0) validAnswers[q] = parseInt(val);
+    else naCount++;
+  }
+  const validCount = Object.keys(validAnswers).length;
+  if(validCount === 0){
+    alert('请至少回答一道有效题目（非N/A）');
+    return;
+  }
+  
+  // 总分（按比例折算到64分满分，用实际题目满分而非固定常数）
+  const rawTotal = Object.values(validAnswers).reduce((a,b)=>a+b,0);
+  let maxPossible = 0;
+  for(const q of Object.keys(validAnswers)){
+    maxPossible += QUESTION_MAX[parseInt(q)] || 4;
+  }
+  const total = Math.round(rawTotal / maxPossible * 64);
+  
+  // 阶段判定
+  let stage, stageName, stageDesc;
+  if(total <= 24){stage=0;stageName='阶段0：受限访问';stageDesc='观望者——AI使用零散、无组织支持'}
+  else if(total <= 34){stage=1;stageName='阶段1：辅助模式';stageDesc='结对编程——人在盯、AI在写'}
+  else if(total <= 44){stage=2;stageName='阶段2：并行模式';stageDesc='智能体协调——批量任务、异步验收'}
+  else if(total <= 54){stage=3;stageName='阶段3：自主运行';stageDesc='智能体管理——常驻智能体、主动触发'}
+  else{stage=4;stageName='阶段4：AI原生';stageDesc='意图引导者——意图驱动，闭环自转'}
+  
+  // 四轴计算（只统计有效答案）
+  const axisScores = {};
+  const axisAvgs = {};
+  const axisCounts = {};
+  for(const [axis,qNums] of Object.entries(AXIS_MAP)){
+    let sum = 0, count = 0;
+    qNums.forEach(n=>{
+      if(validAnswers[n] && validAnswers[n] > 0){sum+=validAnswers[n];count++;}
+    });
+    axisScores[axis] = sum;
+    axisCounts[axis] = count;
+    axisAvgs[axis] = count > 0 ? sum / count : 0;
+  }
+  
+  // 折算到1-5分制（分母用该轴实际题目满分均值，而非硬编码常数）
+  const to5 = (avg, maxPer) => avg > 0 ? Math.min(5, Math.round((1 + (avg - 1) * (4 / (maxPer/3)))*10)/10) : 0;
+  const scaled = {};
+  for(const [axis, qNums] of Object.entries(AXIS_MAP)){
+    const axisMaxAvg = AXIS_MAX[axis] / qNums.length;
+    scaled[axis] = to5(axisAvgs[axis], axisMaxAvg);
+  }
+  
+  // 乘法乘积
+  const product = Math.round(scaled.yuwei * scaled.shiwei * scaled.zhiwei * scaled.yuanwei);
+  
+  // 找到最低轴和最高轴
+  let minAxis = 'yuwei', minVal = scaled.yuwei;
+  let maxAxis = 'yuwei', maxVal = scaled.yuwei;
+  for(const a of ['shiwei','zhiwei','yuanwei']){
+    if(scaled[a] < minVal){minAxis=a;minVal=scaled[a];}
+    if(scaled[a] > maxVal){maxAxis=a;maxVal=scaled[a];}
+  }
+  
+  // 乘积诊断（阶段感知）
+  let prodDiag;
+  if(product > 200){
+    if(stage >= 4) prodDiag = '四轴齐备，已进入自转轨道——保持节律，分享方法论给其他团队';
+    else prodDiag = '四轴均衡，可以冲刺下一阶段';
+  }
+  else if(product >= 100) prodDiag = '有一个弱轴拖后腿：' + AXIS_LABELS[minAxis];
+  else if(product >= 50) prodDiag = '两个弱轴需集中突破：从' + AXIS_LABELS[minAxis] + '开始';
+  else prodDiag = '多轴严重不足：本季只攻' + AXIS_LABELS[minAxis];
+  
+  // 最低轴建议（邀请式语气）
+  const advices = {
+    yuwei:'可以试试：预约一次高管30分钟，带上先锋员工用AI完成真实工作的效率数据（不是讲AI概念），去谈试点授权。月度目标：3人小组用AI完成一项真实任务。',
+    shiwei:'可以试试：挑一个团队最讨厌的周常任务，让AI独立跑一次。规则很简单——跑完了你只看结果不干预。记录一下：AI做30分钟，你只用3分钟验收。',
+    zhiwei:'可以试试：团队花15分钟做问卷复盘，每人算自己的四轴快照贴到共享文档。只讨论一个问题——"哪个轴的分数让你意外，为什么？"先不讨论怎么改，先讨论怎么发现。',
+    yuanwei:'可以试试：写出团队CLAUDE.md（半页纸就够了）：①团队最低质量标准 ②3条必须遵守的规则 ③什么情况下应该直接拒绝AI输出。写完后注入到AI工具中试试看。'
+  };
+  
+  // 最高轴肯定
+  const strengthNotes = {
+    yuwei:'你们的资源基础打得不错——这就像有了稳固的地基，后续的节律、觉知、反馈才有落脚之处。',
+    shiwei:'你们的节奏感很好——AI已经融入日常节律，这是从"偶尔用"到"离不开"的关键一步。',
+    zhiwei:'你们的觉知清晰度很高——团队清楚自己在做什么、下一步该做什么，这是最难得的"元能力"。',
+    yuanwei:'你们的反馈闭环很健康——验证、规范、上下文都已成型，这是可持续进化的保障。'
+  };
+
+  // 阶段4专属建议（已进入自转轨道，重点是分享与深化）
+  const stage4Advices = {
+    yuwei:'你们的资源基础已经打得很扎实。本周可以试试：写一份"AI落地经验复盘"（半页纸），分享给公司内其他团队——不是分享技术，而是分享你们从试点到自转的关键决策点。',
+    shiwei:'你们的节律已经成熟。本周可以试试：把你们的AI工作流文档化，输出一份"团队AI日课"模板，让新加入的成员也能快速对齐节奏。',
+    zhiwei:'你们的觉知能力很强。本周可以试试：组织一次"AI决策复盘会"——回顾过去一个月AI自动做出的决策，哪些是对的、哪些需要调整边界。',
+    yuanwei:'你们的反馈闭环很完整。本周可以试试：把CLAUDE.md升级为"AI协作宪章"，加入一条"什么情况下AI可以自主决策无需人类审批"。'
+  };
+  
+  // 保存历史
+  saveHistory({date:new Date().toISOString().slice(0,10), total, stage, axisScores, scaled, product, minAxis, naCount});
+  
+  // 渲染报告
+  renderReport(total, stage, stageName, stageDesc, axisScores, axisAvgs, axisCounts, scaled, product, prodDiag, minAxis, maxAxis, advices, stage4Advices, strengthNotes, naCount, validCount);
+  
+  // 画雷达图
+  setTimeout(()=>{
+    drawRadar(scaled);
+    const radar = document.getElementById('radar');
+    if(radar) radar._scaled = scaled;
+  }, 300);
+  
+  // 打开面板
+  document.getElementById('result').classList.add('open');
+}
+
+// ========== 渲染报告 ==========
+function renderReport(total, stage, stageName, stageDesc, axisScores, axisAvgs, axisCounts, scaled, product, prodDiag, minAxis, maxAxis, advices, stage4Advices, strengthNotes, naCount, validCount){
+  const stageClass = 'stage-'+stage;
+  let html = `
+    <div class="stat-item"><span class="stat-label">总分</span><span class="stat-value">${total} / 64</span></div>
+    <span class="stage-badge ${stageClass}">${stageName}</span>
+    <div class="stat-item"><span class="stat-label">特征</span><span class="stat-value" style="font-size:12px">${stageDesc}</span></div>
+    ${naCount > 0 ? `<div style="font-size:11px;color:var(--na-count);margin:4px 0">${naCount} 题选择了N/A · 基于 ${validCount} 道有效答题计算</div>` : ''}
+    <hr style="border-color:var(--hr-color);margin:16px 0">
+    <h4 style="font-size:13px;color:var(--text-report-h4);margin:12px 0 8px">四轴快照</h4>
+    <canvas id="radar" class="radar" width="320" height="320"></canvas>
+  `;
+  
+  for(const a of ['yuwei','shiwei','zhiwei','yuanwei']){
+    const cls = scaled[a]>=3?'good':scaled[a]>=2?'warn':'bad';
+    const naNote = (axisCounts && axisCounts[a] < AXIS_MAP[a].length) ? '（部分N/A）' : '';
+    html += `<div class="stat-item"><span class="stat-label">${AXIS_LABELS[a]}${naNote}</span><span class="stat-value ${cls}">均分${axisAvgs[a].toFixed(1)} · 折算${scaled[a]}</span></div>`;
+  }
+  
+  // 优势轴
+  html += `
+    <hr style="border-color:var(--hr-color);margin:16px 0">
+    <div class="advice-box" style="border-left-color:var(--accent-1);background:var(--bg-advice)">
+      <strong>✨ 你的优势轴：${AXIS_LABELS[maxAxis]}</strong><br>
+      <span style="color:var(--text-advice-detail)">${strengthNotes[maxAxis]}</span>
+    </div>
+  `;
+  
+  const curAdvices = (stage >= 4) ? stage4Advices : advices;
+  html += `
+    <hr style="border-color:var(--hr-color);margin:16px 0">
+    <div class="stat-item"><span class="stat-label">乘法乘积</span><span class="stat-value ${product>100?'good':product>50?'warn':'bad'}">${product}</span></div>
+    <div style="font-size:11px;color:var(--text-report-faint);margin:4px 0 12px">${scaled.yuwei}×${scaled.shiwei}×${scaled.zhiwei}×${scaled.yuanwei}</div>
+    <div style="font-size:11px;color:var(--text-report-h4);margin-bottom:12px">${prodDiag}</div>
+    <div class="advice-box">
+      <strong>💡 ${stage >= 4 ? '本周可以深化' : '本周可以试试'}（${AXIS_LABELS[minAxis]}最低）：</strong><br>
+      ${curAdvices[minAxis]}
+    </div>
+  `;
+  
+  // 历史对比
+  const history = getHistory();
+  if(history.length > 1){
+    const prev = history[history.length-2];
+    html += `<hr style="border-color:var(--hr-color);margin:16px 0"><h4 style="font-size:13px;color:var(--text-report-h4);margin:12px 0 8px">📈 历史对比</h4>`;
+    const diff = total - prev.total;
+    const trend = diff>0?'trend-up':diff<0?'trend-down':'trend-flat';
+    const arrow = diff>0?'↑':diff<0?'↓':'→';
+    html += `<div class="history-item"><span>上次（${prev.date}）</span><span>${prev.total}分 · 阶段${prev.stage}</span></div>`;
+    html += `<div class="history-item"><span class="${trend}">本次 vs 上次</span><span class="${trend}">${arrow} ${Math.abs(diff)}分</span></div>`;
+  }
+  
+  // 慧惠陪伴式收尾
+  html += `
+    <hr style="border-color:var(--hr-color);margin:16px 0">
+    <div style="text-align:center;padding:16px 8px;font-size:12px;color:var(--text-report-dim);line-height:1.8">
+      ✨ 慧惠 · 陪伴提示<br>
+      <span style="font-size:11px;color:var(--text-report-verydim)">
+      这份评估的最终目的，是让你更相信团队的判断力，<br>而非依赖任何工具。<br>
+      数字只是镜子——真正重要的是，<br>你们此刻看见了自己在哪里，<br>也知道了下一步想往哪里去。
+      </span>
+    </div>
+  `;
+  
+  // 导出按钮
+  html += `<div style="margin-top:18px;text-align:center"><button class="btn" onclick="exportReport()" style="font-size:11px;padding:6px 16px">📋 导出为 Markdown</button></div>`;
+  
+  document.getElementById('report-content').innerHTML = html;
+}
+
+// ========== 雷达图 ==========
+function drawRadar(scaled){
+  const canvas = document.getElementById('radar');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W=320, H=320, cx=160, cy=160, r=90;
+  ctx.clearRect(0,0,W,H);
+  
+  const axes = ['yuwei','shiwei','zhiwei','yuanwei'];
+  const colors = {yuwei:'#e17055',shiwei:'#00cec9',zhiwei:'#74b9ff',yuanwei:'#fdcb6e'};
+  const angleStep = Math.PI*2 / axes.length;
+  
+  // 网格
+  for(let l=1;l<=5;l++){
+    ctx.beginPath();
+    for(let i=0;i<axes.length;i++){
+      const angle = angleStep*i - Math.PI/2;
+      const x = cx + r*l/5*Math.cos(angle), y = cy + r*l/5*Math.sin(angle);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = l===3?getComputedStyle(document.documentElement).getPropertyValue('--radar-grid-main').trim():getComputedStyle(document.documentElement).getPropertyValue('--radar-grid').trim();
+    ctx.lineWidth = l===3?1.5:0.8;
+    ctx.stroke();
+  }
+  
+  // 轴线
+  for(let i=0;i<axes.length;i++){
+    const angle = angleStep*i - Math.PI/2;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+r*Math.cos(angle), cy+r*Math.sin(angle));
+    ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--radar-axis').trim();
+    ctx.stroke();
+  }
+  
+  // 数据多边形
+  ctx.beginPath();
+  for(let i=0;i<axes.length;i++){
+    const angle = angleStep*i - Math.PI/2;
+    const x = cx + r*scaled[axes[i]]/5*Math.cos(angle);
+    const y = cy + r*scaled[axes[i]]/5*Math.sin(angle);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--radar-fill').trim();
+  ctx.fill();
+  ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent-1').trim();
+  ctx.lineWidth=2;
+  ctx.stroke();
+  
+  // 数据点 + 标签
+  const shortLabels = {yuwei:'宇位',shiwei:'时位',zhiwei:'识位',yuanwei:'缘位'};
+  for(let i=0;i<axes.length;i++){
+    const angle = angleStep*i - Math.PI/2;
+    const x = cx + r*scaled[axes[i]]/5*Math.cos(angle);
+    const y = cy + r*scaled[axes[i]]/5*Math.sin(angle);
+    ctx.beginPath();
+    ctx.arc(x,y,4,0,Math.PI*2);
+    ctx.fillStyle = colors[axes[i]];
+    ctx.fill();
+    
+    // 标签：根据角度位置动态调整 textAlign，避免边缘裁切
+    const labelR = r + 40;
+    const lx = cx + labelR*Math.cos(angle);
+    const ly = cy + labelR*Math.sin(angle);
+    ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--radar-label').trim();
+    ctx.font='bold 11px sans-serif';
+    ctx.textBaseline='middle';
+    // 右半轴标签左对齐（向内延伸），左半轴标签右对齐（向内延伸），上下居中
+    const cosA = Math.cos(angle);
+    if(cosA > 0.05) ctx.textAlign = 'left';
+    else if(cosA < -0.05) ctx.textAlign = 'right';
+    else ctx.textAlign = 'center';
+    ctx.fillText(shortLabels[axes[i]], lx, ly);
+  }
+}
+
+// ========== 本地存储 ==========
+function getHistory(){
+  try{return JSON.parse(localStorage.getItem('ai_maturity_history')||'[]');}catch(e){return[];}
+}
+function saveHistory(entry){
+  const h = getHistory();
+  h.push(entry);
+  if(h.length>12) h.shift(); // 最多保留12条（3年季度数据）
+  localStorage.setItem('ai_maturity_history', JSON.stringify(h));
+}
+function resetAll(){
+  if(confirm('确定清除所有答题和历史记录？')){
+    localStorage.removeItem('ai_maturity_history');
+    document.querySelectorAll('.q').forEach(q=>{q.dataset.answer='';q.querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('selected'))});
+    document.getElementById('result').classList.remove('open');
+  }
+}
+function toggleHistory(){
+  const h = getHistory();
+  if(!h.length){alert('暂无历史记录');return;}
+  const lines = h.map((e,i)=>`${i+1}. ${e.date} | ${e.total}分 | 阶段${e.stage} | 乘积${e.product}`);
+  alert('历史记录（最近12次）：\n\n'+lines.join('\n'));
+}
+
+// ========== 导出报告 ==========
+function exportReport(){
+  const container = document.getElementById('report-content');
+  // 克隆节点，移除导出按钮后再提取文本
+  const clone = container.cloneNode(true);
+  const exportBtn = clone.querySelector('button');
+  if(exportBtn) exportBtn.parentElement.remove();
+  const content = clone.innerText.trim();
+  const date = new Date().toISOString().slice(0,10);
+  const md = `# 团队AI成熟度诊断报告\n> 评估日期：${date}\n\n---\n\n${content.replace(/\n/g,'\n\n')}`;
+  const blob = new Blob([md],{type:'text/markdown'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url;a.download=`AI成熟度诊断_${date}.md`;a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ========== 初始化 ==========
+renderOptions();
+
+// 加载上次答案
+const lastHistory = getHistory();
+if(lastHistory.length){
+  console.log(`📊 已有 ${lastHistory.length} 条历史记录。最新：${lastHistory[lastHistory.length-1].date}，${lastHistory[lastHistory.length-1].total}分，阶段${lastHistory[lastHistory.length-1].stage}`);
+}
+</script>
+<script>
+// ========== 反馈功能（内联版） ==========
+document.addEventListener('DOMContentLoaded', function() {
+    const feedbackFloat = document.getElementById('feedbackFloat');
+    const feedbackOverlay = document.getElementById('feedbackOverlay');
+    const feedbackClose = document.getElementById('feedbackClose');
+    const feedbackForm = document.getElementById('feedbackForm');
+    const feedbackSuccess = document.getElementById('feedbackSuccess');
+    const fbSubmit = document.getElementById('fbSubmit');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const fbFile = document.getElementById('fbFile');
+    const filePreviewContainer = document.getElementById('filePreviewContainer');
+    const fbContent = document.getElementById('fbContent');
+    const fbCount = document.getElementById('fbCount');
+    const fbError = document.getElementById('fbError');
+    
+    const uploadedFiles = [];
+    let isContentValid = false;
+    
+    const feedbackSource = feedbackFloat ? feedbackFloat.dataset.source || 'unknown' : 'unknown';
+
+    function validateContent() {
+        if (!fbContent || !fbCount || !fbError) return;
+        const content = fbContent.value.trim();
+        const chineseCount = (content.match(/[\u4e00-\u9fa5]/g) || []).length;
+        const totalCount = content.length;
+        const hasChinese = chineseCount > 0;
+        const isValid = hasChinese ? chineseCount >= 5 : totalCount >= 10;
+        fbCount.textContent = hasChinese ? totalCount + ' / 2000 字（至少5个汉字）' : totalCount + ' / 2000 chars (at least 10 characters)';
+        if (isValid) {
+            fbContent.classList.remove('error'); fbError.classList.remove('show');
+            fbCount.classList.remove('error'); fbCount.classList.add('success'); isContentValid = true;
+        } else {
+            fbContent.classList.add('error'); fbError.classList.add('show');
+            fbCount.classList.remove('success'); fbCount.classList.add('error'); isContentValid = false;
+        }
+    }
+
+    window.openFeedback = function() {
+        if (!feedbackOverlay) return;
+        feedbackOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    };
+
+    function closeFeedback() {
+        if (!feedbackOverlay || !feedbackForm || !feedbackSuccess) return;
+        feedbackOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+        feedbackForm.style.display = '';
+        feedbackSuccess.classList.remove('show');
+        if (fbContent) { fbContent.value = ''; fbContent.classList.remove('error'); }
+        if (document.getElementById('fbContact')) { document.getElementById('fbContact').value = ''; }
+        if (document.getElementById('fbType')) { document.getElementById('fbType').value = 'suggestion'; }
+        if (fbError) { fbError.classList.remove('show'); }
+        if (fbCount) { fbCount.classList.remove('error', 'success'); fbCount.textContent = '0 / 2000 字（至少5个汉字）'; }
+        isContentValid = false; uploadedFiles.length = 0;
+        if (filePreviewContainer) { filePreviewContainer.innerHTML = ''; }
+    }
+
+    function handleFiles(files) {
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (uploadedFiles.length >= 3) { alert('最多只能上传3张图片'); break; }
+            if (!file.type.startsWith('image/')) { alert('请上传图片文件'); continue; }
+            if (file.size > 5 * 1024 * 1024) { alert('单张图片不能超过5MB'); continue; }
+            uploadedFiles.push(file);
+            showFilePreview(file, uploadedFiles.length - 1);
+        }
+    }
+
+    function showFilePreview(file, index) {
+        if (!filePreviewContainer) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'file-preview-item';
+            previewItem.innerHTML = '<img src="' + e.target.result + '" alt="图片预览"><div class="file-preview-remove" onclick="window.removeFeedbackFile(' + index + ')">×</div>';
+            filePreviewContainer.appendChild(previewItem);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    window.removeFeedbackFile = function(index) {
+        uploadedFiles.splice(index, 1);
+        if (filePreviewContainer) { filePreviewContainer.innerHTML = ''; uploadedFiles.forEach((file, i) => showFilePreview(file, i)); }
+    };
+
+    async function fetchWithRetry(url, options, retries, timeoutMs) {
+        retries = (retries !== undefined) ? retries : 2;
+        timeoutMs = (timeoutMs !== undefined) ? timeoutMs : 15000;
+        for (var attempt = 0; attempt <= retries; attempt++) {
+            var controller = new AbortController();
+            var timer = setTimeout(function() { controller.abort(); }, timeoutMs);
+            try {
+                var resp = await fetch(url, Object.assign({}, options, { signal: controller.signal }));
+                clearTimeout(timer);
+                return resp;
+            } catch (e) {
+                clearTimeout(timer);
+                if (attempt === retries) throw e;
+                await new Promise(function(r) { setTimeout(r, 1000 * (attempt + 1)); });
+            }
+        }
+    }
+
+    function submitFeedback() {
+        if (!fbSubmit) return;
+        validateContent();
+        if (!isContentValid) return;
+        fbSubmit.disabled = true;
+        fbSubmit.textContent = '提交中…';
+        (async function() {
+            try {
+                var fileDataList = [];
+                for (var i = 0; i < uploadedFiles.length; i++) {
+                    var file = uploadedFiles[i];
+                    var reader = new FileReader();
+                    var dataUrl = await new Promise(function(resolve, reject) {
+                        reader.onload = function() { resolve(reader.result); };
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
+                    var base64 = dataUrl.split(',')[1];
+                    var mime = dataUrl.split(',')[0].split(':')[1].split(';')[0];
+                    fileDataList.push({ name: file.name, type: file.type || mime, size: file.size, base64: base64 });
+                }
+                var content = document.getElementById('fbContent') ? document.getElementById('fbContent').value.trim() : '';
+                var payload = {
+                    type: document.getElementById('fbType') ? document.getElementById('fbType').value : 'suggestion',
+                    source: feedbackSource,
+                    content: content,
+                    contact: document.getElementById('fbContact') ? document.getElementById('fbContact').value.trim() : '',
+                    files: fileDataList
+                };
+                var API_URL = '__FEEDBACK_API_URL__';
+                var resp = await fetchWithRetry(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                var data = await resp.json();
+                if (data.success) {
+                    if (feedbackForm) feedbackForm.style.display = 'none';
+                    if (feedbackSuccess) feedbackSuccess.classList.add('show');
+                    if (data.imagesUploaded !== undefined && feedbackSuccess) {
+                        var successMsgEl = feedbackSuccess.querySelector('p');
+                        if (successMsgEl) {
+                            successMsgEl.textContent = '🎉 感谢你的反馈！\\n图片上传: ' + data.imagesUploaded + '/' + uploadedFiles.length;
+                            successMsgEl.style.whiteSpace = 'pre-line';
+                        }
+                    }
+                } else {
+                    throw new Error(data.error || 'API返回错误');
+                }
+            } catch (e) {
+                if (API_URL.indexOf('__FEEDBACK_API_URL__') !== -1) {
+                    alert('反馈功能尚未配置。请 fork 仓库后设置 FEEDBACK_API_URL。');
+                } else {
+                    alert('反馈功能需要网络连接，请稍后重试。你也可以在 GitHub 仓库提交 Issue。');
+                }
+            } finally {
+                if (fbSubmit) { fbSubmit.disabled = false; fbSubmit.textContent = '提交反馈'; }
+            }
+        })();
+    }
+
+    if (fbContent) { fbContent.addEventListener('input', validateContent); fbContent.addEventListener('blur', validateContent); }
+    if (feedbackFloat) { feedbackFloat.addEventListener('click', window.openFeedback); }
+    if (feedbackClose) { feedbackClose.addEventListener('click', closeFeedback); }
+    if (feedbackOverlay) { feedbackOverlay.addEventListener('click', function(e) { if (e.target === feedbackOverlay) closeFeedback(); }); }
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && feedbackOverlay && feedbackOverlay.classList.contains('active')) closeFeedback(); });
+    if (fileUploadArea && fbFile) {
+        fileUploadArea.addEventListener('click', function() { fbFile.click(); });
+        fileUploadArea.addEventListener('dragover', function(e) { e.preventDefault(); this.classList.add('dragover'); });
+        fileUploadArea.addEventListener('dragleave', function() { this.classList.remove('dragover'); });
+        fileUploadArea.addEventListener('drop', function(e) { e.preventDefault(); this.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+        fbFile.addEventListener('change', function(e) { handleFiles(e.target.files); });
+    }
+    if (fbSubmit) { fbSubmit.addEventListener('click', submitFeedback); }
+});
+</script>
+</body>
+</html>
