@@ -427,7 +427,9 @@ canvas.radar{display:block;margin:16px auto;width:100%;max-width:320px}
   window.addEventListener('scroll', ()=>{
     if(!ticking){
       requestAnimationFrame(()=>{
-        const show = window.scrollY > 300;
+        const resultPanel = document.getElementById('result');
+        const isResultOpen = resultPanel && resultPanel.classList.contains('open');
+        const show = !isResultOpen && window.scrollY > 300;
         if(btn) btn.classList.toggle('show', show);
         if(backHomeBtn) backHomeBtn.classList.toggle('show', show);
         if(feedbackFloat) feedbackFloat.classList.toggle('show', show);
@@ -733,6 +735,7 @@ function renderReport(total, stage, stageName, stageDesc, axisScores, axisAvgs, 
   
   document.getElementById('result').classList.add('open');
   
+  document.getElementById('backToTopBtn')?.classList.remove('show');
   document.getElementById('feedbackFloat')?.classList.remove('show');
   document.getElementById('backToHomeBtn')?.classList.remove('show');
 }
