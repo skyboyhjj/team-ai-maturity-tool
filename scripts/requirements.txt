@@ -1,0 +1,9 @@
+# 团队AI成熟度工具 Python 依赖
+
+# 自动采集脚本依赖
+gitpython>=3.1.43
+requests>=2.31.0
+python-dotenv>=1.0.1
+
+# 测试依赖
+pytest>=7.4.0
