@@ -429,7 +429,9 @@ canvas.radar{display:block;margin:16px auto;width:100%;max-width:320px}
       requestAnimationFrame(()=>{
         const resultPanel = document.getElementById('result');
         const isResultOpen = resultPanel && resultPanel.classList.contains('open');
-        const show = !isResultOpen && window.scrollY > 300;
+        const feedbackOverlay = document.getElementById('feedbackOverlay');
+        const isFeedbackOpen = feedbackOverlay && feedbackOverlay.classList.contains('active');
+        const show = !isResultOpen && !isFeedbackOpen && window.scrollY > 300;
         if(btn) btn.classList.toggle('show', show);
         if(backHomeBtn) backHomeBtn.classList.toggle('show', show);
         if(feedbackFloat) feedbackFloat.classList.toggle('show', show);
